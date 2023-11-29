@@ -16,14 +16,15 @@ This repo is the official implementation for cognitive modeling with the hybrid 
 
 * To train on cognitive dataset, you can run: 
 ```
-python3 train.py 
+python3 train.py --input FUSION_METHOD --path MODEL_PATH
 ```
+Replace FUSION_METHOD with the fusion method, and replace MODEL_PATH with your local path to save the model.
 
 ## Testing
 
 * To test the model which has been trained on the cognitive dataset, you can run the testing script as following:
 ```
-python test.py 
+python test.py --input FUSION_METHOD --path MODEL_PATH
 ```
-Replace MODEL_PATH with your local path of the trained model.
+Replace FUSION_METHOD with the fusion method, and replace MODEL_PATH with your local path of the trained model.
 
