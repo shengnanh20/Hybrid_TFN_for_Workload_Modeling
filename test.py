@@ -50,62 +50,7 @@ def parse_args():
     return args
 
 
-def test(net, type, x_test, y_test, task, logger):
-    running_acc = 0.
-    running_mse = 0.
-    for (j, input_data) in enumerate(x_test):
-        
-        if task == 'cla':
-            label = (y_test[j]).long()
-        else:
-            label = y_test[j]
-        
-            
-        tobii_data = input_data[:, :11, :]
-        ppg_data = input_data[:, 11:, :]
-        
-        if type == 'fusion':
-            output = net(tobii_data, ppg_data).squeeze(0)
-        elif type == 'late_fusion': 
-            output = net(tobii_data, ppg_data).squeeze(0)
-        elif type == 'pre_fusion':
-            output = net(input_data).squeeze(0)
-        elif type == 'ppg':
-            output = net(ppg_data).squeeze(0)
-        elif type == 'tobii':
-            output = net(tobii_data).squeeze(0)
-        else:
-            t2 = torch.cat([tobii_data, torch.ones(1,1,1)], dim=1)
-            p2 = torch.cat([ppg_data, torch.ones(1,1,1)], dim=1).permute([0,2,1])
-            fusion_tp = torch.einsum('nxt, nty->nxy', t2, p2)
-            fusion_tp = fusion_tp.flatten(start_dim=1).unsqueeze(2)
-            output = net(fusion_tp).squeeze(0)
-                
-        if task == 'cla':
-            _, predict = torch.max(output, 1)
-            correct_num = (predict == label).sum()
-            running_acc += correct_num.data.item()
-        
-        else:
-            output = output.squeeze(0)
-            mse = MeanSquaredError()
-            running_mse += mse(output, label).data.item()
-     
-    if task == 'cla':     
-        running_acc /= len(x_test)
-        logger.info('Testing acc={:.3f}'.format(running_acc))
-        
-        
-    else:
-        running_mse /= len(x_test)
-        logger.info('Testing mse={:.3f}'.format(running_mse))
-        
-    # logger.info("F1-Score:{:.4f}".format(f1_score(label_all,prob_all)))
-    
-            
-    # print("Test Acc: %.2f" %( 100*running_acc))
-
-def test2(net, type, dataloder, task, logger):
+def test(net, type, dataloder, task, logger):
     running_acc = 0.
     running_mse = 0.
     for id_batch, (x_batch, y_batch) in enumerate(dataloader):
@@ -189,12 +134,7 @@ def test2(net, type, dataloder, task, logger):
         auroc = auroc(output, y_batch)
         logger.info('AUROC={:.3f}'.format(auroc))
         
-        
-    # logger.info("F1-Score:{:.4f}".format(f1_score(label_all,prob_all)))
-    
-            
-    # print("Test Acc: %.2f" %( 100*running_acc))
-          
+                 
 
 if __name__ == "__main__":  
     
@@ -272,7 +212,5 @@ if __name__ == "__main__":
     
     net, optimizer = load_checkpoint(net, model_path, optimizer)
     logger.info("=> loading model from {}".format(model_path))
-    # net = torch.load(model_path)
-    # test(net, input, x, y, task, logger)
-    test2(net, input, dataloader, task, logger)
+    test(net, input, dataloader, task, logger)
 
