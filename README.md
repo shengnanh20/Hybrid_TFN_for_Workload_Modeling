@@ -12,7 +12,7 @@ This repo is the official implementation for cognitive modeling with the hybrid 
 
 [HP Omnicept Cognitive Load Database (HPO-CLD)](https://developers.hp.com/omnicept/hp-omnicept-cognitive-load-database-hpo-cld-%E2%80%93-developing-multimodal-inference-engine-detecting-real-time-mental-workload-vr)
 
-* To generate the training and testing set, you can run: 
+* To generate the training and testing set based on the HPO-CLD, you can run: 
 ```
 python3 utils/genData.py
 ```
