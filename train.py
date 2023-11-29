@@ -61,49 +61,9 @@ def train(net, optimizer, type, dataloader, epoches, model_path, task, logger):
             if type == 'late_fusion': 
                 output = net(tobii_data.unsqueeze(2), ppg_data.unsqueeze(2)).squeeze(0)
                 output = output.squeeze(1)
-                # loss = crossEntropy(output, y_batch)  
-            elif type == 'fusion':
-                output = net(tobii_data.unsqueeze(2), ppg_data.unsqueeze(2)).squeeze(0)
-                output = output.squeeze(1)
             elif type == 'pre_fusion':
                 output = net(x_batch.unsqueeze(2)).squeeze(0)
-                output = output.squeeze(1)
-            elif type == 'ppg':
-                output = net(ppg_data.unsqueeze(2)).squeeze(0)
-                output = output.squeeze(1)
-            elif type == 'tobii':
-                output = net(tobii_data.unsqueeze(2)).squeeze(0)
-                output = output.squeeze(1)
-            elif input == 'att':
-                output = net(tobii_data.unsqueeze(2), ppg_data.unsqueeze(2)).squeeze(0)
-            elif type == 'tfn_ppg':
-                t2 = torch.cat([ppg_data, torch.ones(n,1)], dim=1)
-                p2 = torch.cat([ppg_data, torch.ones(n,1)], dim=1)
-                t2 = t2.unsqueeze(2)
-                p2 = p2.unsqueeze(1)
-                fusion_tp = torch.einsum('nxt, nty->nxy', t2, p2)
-                fusion_tp = fusion_tp.flatten(start_dim=1).unsqueeze(2)
-                output = net(fusion_tp)
-                output=output.squeeze(1)
-            elif type == 'tfn_tobii':
-                t2 = torch.cat([tobii_data, torch.ones(n,1)], dim=1)
-                p2 = torch.cat([tobii_data, torch.ones(n,1)], dim=1)
-                t2 = t2.unsqueeze(2)
-                p2 = p2.unsqueeze(1)
-                fusion_tp = torch.einsum('nxt, nty->nxy', t2, p2)
-                fusion_tp = fusion_tp.flatten(start_dim=1).unsqueeze(2)
-                output = net(fusion_tp)
-                output=output.squeeze(1)           
-            elif type == 'tfn':
-                t2 = torch.cat([tobii_data, torch.ones(n,1)], dim=1)
-                p2 = torch.cat([ppg_data, torch.ones(n,1)], dim=1)
-                t2 = t2.unsqueeze(2)
-                p2 = p2.unsqueeze(1)
-                fusion_tp = torch.einsum('nxt, nty->nxy', t2, p2)
-                fusion_tp = fusion_tp.flatten(start_dim=1).unsqueeze(2)
-                output = net(fusion_tp)
-                output=output.squeeze(1)
-                
+                output = output.squeeze(1)            
             else:       # hybrid (tfn + fusion)
                 t2 = torch.cat([tobii_data, torch.ones(n,1)], dim=1)
                 p2 = torch.cat([ppg_data, torch.ones(n,1)], dim=1)
@@ -187,25 +147,11 @@ if __name__ == "__main__":
     x = x.reshape(x.shape[0], 1, x.shape[1], 1)
     y = y.reshape(y.shape[0],1)
 
-    
-    if input == 'fusion':
-        net = FusionNet(len_tobii, len_ppg, hidden_dim, output_dim)    
-    elif input == 'pre_fusion':
+     
+    if input == 'pre_fusion':
         net = Single_Net(len_tobii + len_ppg, hidden_dim, output_dim) 
     elif input == 'late_fusion':
         net = LateFusionNet(len_tobii, len_ppg, hidden_dim, output_dim)     
-    elif input == 'ppg':
-        net = Single_Net(len_ppg, hidden_dim, output_dim)  
-    elif input == 'tobii':
-        net = Single_Net(len_tobii, hidden_dim, output_dim)  
-    elif input == 'tfn_ppg':
-        net = Single_Net((len_ppg+1)**2, hidden_dim, output_dim)  
-    elif input == 'tfn_tobii':
-        net = Single_Net((len_tobii+1)**2, hidden_dim, output_dim)  
-    elif input == 'tfn':
-        net = Single_Net((len_ppg+1)*(len_tobii+1), hidden_dim, output_dim) 
-    elif input == 'att':
-        net = Att_Fusion(len_tobii, len_ppg, hidden_dim, output_dim)
     else:
         net = Hybrid_FusionNet(len_tobii, len_ppg, 120, hidden_dim, output_dim)
 
