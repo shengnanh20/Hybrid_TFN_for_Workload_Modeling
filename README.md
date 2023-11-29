@@ -6,7 +6,7 @@ This repo is the official implementation for workload modeling with the hybrid t
 ## Requirements
 
 * python 3.9
-* pytorch 1.12.1
+* pytorch 1.8.1
 
 ## Datasets
 
