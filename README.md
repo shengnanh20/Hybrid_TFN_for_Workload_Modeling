@@ -15,6 +15,7 @@ This repo is the official implementation for cognitive modeling with the hybrid 
 * To generate the training and testing set, you can run: 
 ```
 python3 utils/genData.py
+```
 
 ## Training
 
