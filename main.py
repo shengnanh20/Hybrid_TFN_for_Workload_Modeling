@@ -79,17 +79,9 @@ if __name__ == "__main__":
     DataFolder = 'data/'
     data = pd.read_csv(DataPath)
     data = data.fillna(0)
-    # data_group(data)
 
     x = data.iloc[:, 3:23]
     y = data.iloc[:, 23]
-
-    # splitter = GroupShuffleSplit(test_size=.20, n_splits=2, random_state = 7)
-
-    # split = splitter.split(data, groups=data['Index'])
-    # train_ix, test_ix = next(split)
-
-    # x_train, x_test, y_train, y_test =  x.loc[train_ix], x.loc[test_ix], y.loc[train_ix], y.loc[test_ix]
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
 

@@ -3,32 +3,6 @@ from torch import nn
 import torch.nn.functional as F
 
 
-class Att_Fusion(nn.Module):
-    def __init__(self, in_channels1, in_channels2, hidden_dim, output):
-        super(Att_Fusion, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels1, hidden_dim, 1)
-        self.conv2 = nn.Conv1d(in_channels2, hidden_dim, 1)
-        self.pool = nn.MaxPool1d(3, 2)
-        self.softmax = nn.Softmax(dim=2)
-        # self.fc = nn.Linear(28, output)
-        self.fc = nn.Linear(hidden_dim, output)
-        
-        self.decoder_layer = nn.TransformerDecoderLayer(d_model=hidden_dim , nhead=6, dropout=0.1, batch_first=True)
-        self.transformer_decoder = nn.TransformerDecoder(self.decoder_layer, num_layers=1)
-        
-    def forward(self, x1, x2):
-        x1 = F.relu(self.conv1(x1)).permute([0,2,1])
-        # x1 = self.pool(x1.permute([0,2,1]))
-        x2 = F.relu(self.conv2(x2)).permute([0,2,1])
-        # x2 = self.pool(x2.permute(0,2,1))
-        
-        out_features = self.transformer_decoder(x1, x2)            
-        out_features =  out_features  / ( out_features.norm(dim=-1, keepdim=True) + 1e-5)     
-
-        out = self.fc( out_features)
-        out = self.softmax(out)
-        return out
-
 class FusionNet(nn.Module):
     def __init__(self, in_channels1, in_channels2, hidden_dim, output):
         super(FusionNet, self).__init__()
@@ -77,27 +51,6 @@ class LateFusionNet(nn.Module):
         # prob = (x1 + x2) / 2
         
         return prob
-
-
-# class Single_Net(nn.Module):
-#     def __init__(self, in_channels, hidden_dim, output):
-#         super(Single_Net, self).__init__()
-#         self.conv1 = nn.Conv1d(in_channels, hidden_dim, 1)
-#         self.conv2 = nn.Conv1d(hidden_dim, 64, 1)
-#         self.dropout1 = nn.Dropout1d(0.25)
-#         self.pool = nn.MaxPool1d(3, 2)
-#         self.softmax = nn.Softmax(dim=2)
-#         # self.fc = nn.Linear(14, output)
-#         self.fc = nn.Linear(31, output)
-        
-#     def forward(self, x):
-#         x = F.relu(self.conv1(x))
-#         x = F.relu(self.conv2(x))
-#         x = self.pool(x.permute([0,2,1]))
-#         x = self.dropout1(x)
-#         out = self.fc(x)
-#         # out = self.softmax(out)
-#         return out
 
 class Single_Net(nn.Module):
     def __init__(self, in_channels, hidden_dim, output):

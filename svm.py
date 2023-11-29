@@ -44,21 +44,6 @@ def load_data(path, task):
     return x, y        
 
 
-# def grid_search(x_dev, y_dev):
-#     clf = LogisticRegression(
-#         penalty='elasticnet', solver='saga', random_state=0
-#     )
-#     param_grid = PARAMETERS['elasticnet']
-#     gsc = GridSearchCV(
-#         estimator=clf,
-#         param_grid=param_grid,
-#         scoring='roc_auc'
-#     )
-#     gsc.fit(x_dev, y_dev)
-
-#     return gsc.best_estimator_
-
-
 def main():
     # get features and labels
     train_data = 'data/train.csv'
@@ -78,11 +63,8 @@ def main():
     
     model.fit(x_train, y_train)
     y_pred = model.predict(x_test)
-    # Acc = accuracy_score(y_test, y_pred)
     y_pred = torch.tensor( y_pred, dtype=torch.float32)
     
-    # importances = model.feature_importances_
-
     accuracy = Accuracy(task="multiclass", num_classes=3)
     running_acc = accuracy(y_pred, y_test) 
     print('Testing acc={:.3f}'.format(running_acc))    
@@ -94,15 +76,7 @@ def main():
     recall = Recall(task="multiclass", average='macro', num_classes=3)
     recall = recall(y_pred, y_test)
     print('Recall={:.3f}'.format(recall))
-        
-    # auroc = AUROC(task="multiclass", num_classes=3)
-    # auroc = auroc(y_pred, y_test)
-    # print('AUROC={:.3f}'.format(auroc))
-    
-
-    # save results 
-    
-
+         
 
 if __name__ == "__main__":
     main()

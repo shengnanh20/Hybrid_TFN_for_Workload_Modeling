@@ -40,89 +40,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
-def train(net, optimizer, type, x_train, y_train, epoches, model_path, task, logger): 
-           
-    # timestamp = time.strftime("%Y-%m-%d-%H_%M_%S",time.localtime(time.time()))
-    timestamp = time.strftime("%Y-%m-%d-%H",time.localtime(time.time()))
-    logger.info('start training!')    
-    for i in range(epoches):
-        running_loss = 0.
-        running_acc = 0.
-        running_mse = 0.
-        for (j, input_data) in enumerate(x_train):
-            if task == 'cla':
-                label = (y_train[j]).long()
-            else:
-                label = y_train[j]
-            optimizer.zero_grad()
-            
-            tobii_data = input_data[:, :11, :]
-            ppg_data = input_data[:, 11:, :]
-            
-            if type == 'late_fusion': 
-                output = net(tobii_data, ppg_data).squeeze(0)
-                loss = crossEntropy(output, label)
-                
-            else:
-                if type == 'fusion':
-                    output = net(tobii_data, ppg_data).squeeze(0)
-                elif type == 'pre_fusion':
-                    output = net(input_data).squeeze(0)
-                elif type == 'ppg':
-                    output = net(ppg_data).squeeze(0)
-                elif type == 'tobii':
-                    output = net(tobii_data).squeeze(0)
-                else:
-                    t2 = torch.cat([tobii_data, torch.ones(1,1,1)], dim=1)
-                    p2 = torch.cat([ppg_data, torch.ones(1,1,1)], dim=1).permute([0,2,1])
-                    fusion_tp = torch.einsum('nxt, nty->nxy', t2, p2)
-                    fusion_tp = fusion_tp.flatten(start_dim=1).unsqueeze(2)
-                    output = net(fusion_tp).squeeze(0)
-                    
-                    
-                if task == 'reg':
-                    output = output.squeeze(0)
-                  
-                loss = criterion(output, label)
-                
-            loss.backward()
-            optimizer.step()
-            
-            running_loss += loss.item()
-            if task == 'cla':
-                _, predict = torch.max(output, 1)
-                correct_num = (predict == label).sum()
-                running_acc += correct_num.data.item()
-            # else:
-            #     mse = MeanSquaredError()
-            #     running_mse += mse(output, label).data.item()
-                
-        running_loss /= len(x_train)
-        running_acc /= len(x_train)
-        # running_mse /= len(x_train)
-        # torch.save(net, model_path)     
-        scheduler.step()
-        
-        if task == 'cla':
-            logger.info('Epoch:[{}/{}]\t lr={:.8f}\t loss={:.5f}\t acc={:.3f}'.format(i+1, epoches, scheduler.get_last_lr()[0], running_loss, 100*running_acc))
-            
-        else:
-            logger.info('Epoch:[{}/{}]\t lr={:.8f}\t loss={:.5f}\t mse={:.3f}'.format(i+1, epoches, scheduler.get_last_lr()[0], running_loss, running_loss))
-        # print("[%d/%d] Loss: %.5f, Acc: %.2f" %(i+1, epoches, running_loss, 100*running_acc))
-        torch.save({'epoch': i + 1, 'state_dict': net.state_dict(), 'loss': running_loss,
-                'optimizer': optimizer.state_dict()},
-                model_path + '/' + input + '_' + task + '_' + timestamp + '.pth.tar')
-
-    # torch.save({'epoch': i + 1, 'state_dict': net.state_dict(), 'loss': running_loss,
-    #             'optimizer': optimizer.state_dict()},
-    #             model_path + '/' + input + timestamp + '.pth.tar')
-    
-    logger.info('finish training!')
-    logger.info("=> Saved model to {}".format(model_path + '/' + input + '_' + task + '_' + timestamp + '.pth.tar'))
-    # writer.close()
-
-def train2(net, optimizer, type, dataloader, epoches, model_path, task, logger): 
+def train(net, optimizer, type, dataloader, epoches, model_path, task, logger): 
            
     # timestamp = time.strftime("%Y-%m-%d-%H_%M_%S",time.localtime(time.time()))
     timestamp = time.strftime("%Y-%m-%d-%H_%M",time.localtime(time.time()))
@@ -219,10 +137,6 @@ def train2(net, optimizer, type, dataloader, epoches, model_path, task, logger):
         torch.save({'epoch': i + 1, 'state_dict': net.state_dict(), 'loss': running_loss,
                 'optimizer': optimizer.state_dict()},
                 model_path + '/' + input + '_' + task + '_b' + str(BATCH_SIZE) + '_' + timestamp + '.pth.tar')
-
-    # torch.save({'epoch': i + 1, 'state_dict': net.state_dict(), 'loss': running_loss,
-    #             'optimizer': optimizer.state_dict()},
-    #             model_path + '/' + input + timestamp + '.pth.tar')
     
     logger.info('finish training!')
     logger.info("=> Saved model to {}".format(model_path + '/' + input + '_' + task + '_b' + str(BATCH_SIZE) + '_' + timestamp + '.pth.tar'))
@@ -302,11 +216,6 @@ if __name__ == "__main__":
     
     model_path = 'models'
     
-    # if args.path:
-    #     net, optimizer = load_checkpoint(net, args.path, optimizer)
-    #     logger.info("=> loading model from {}".format(args.path))
-
-    # train(net, optimizer, input, x, y, 200, model_path, task, logger)
-    train2(net, optimizer, input, dataloader, 500, model_path, task, logger)
+    train(net, optimizer, input, dataloader, 500, model_path, task, logger)
     
 
